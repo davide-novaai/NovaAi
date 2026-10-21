@@ -32,6 +32,7 @@ def rispondi(messaggio, cronologia):
 
     messaggi.append({"role": "user", "content": messaggio})
 
+    
     try:
         risposta = requests.post(
             "https://router.huggingface.co/v1/chat/completions",
@@ -50,9 +51,10 @@ def rispondi(messaggio, cronologia):
         dati = risposta.json()
         return dati["choices"][0]["message"]["content"]
 
-        except Exception as e:
+    except Exception as e:
         print("ERRORE NOVA:", repr(e))
         return f"Errore AI: {type(e).__name__}: {e}"
+
 
 with gr.Blocks(title="NOVA AI", theme=gr.themes.Soft()) as app:
     gr.HTML("""
