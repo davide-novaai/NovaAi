@@ -1,3 +1,5 @@
 
 gradio
-requests
+gradio_client
+fastapi
+uvicorn
