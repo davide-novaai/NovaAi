@@ -47,6 +47,7 @@ def rispondi(messaggio, cronologia):
             },
             timeout=60
         )
+        print("RISPOSTA HUGGING FACE:", risposta.text)
         risposta.raise_for_status()
         dati = risposta.json()
         return dati["choices"][0]["message"]["content"]
