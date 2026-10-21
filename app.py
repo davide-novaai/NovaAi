@@ -33,6 +33,7 @@ def rispondi(messaggio, cronologia):
     messaggi.append({"role": "user", "content": messaggio})
 
     
+    
     try:
         risposta = requests.post(
             "https://router.huggingface.co/v1/chat/completions",
@@ -47,17 +48,16 @@ def rispondi(messaggio, cronologia):
             },
             timeout=60
         )
-        print("RISPOSTA HUGGING FACE:", risposta.text)
         risposta.raise_for_status()
         dati = risposta.json()
         return dati["choices"][0]["message"]["content"]
 
     except Exception as e:
         if "risposta" in locals() and risposta is not None:
-            print("DETTAGLIO HUGGING FACE:", risposta.text)
-        else:
-            print("ERRORE NOVA:", repr(e))
-        return "Errore nella richiesta AI. Controlla i Logs di Render."
+            return f"Errore Hugging Face ({risposta.status_code}): {risposta.text}"
+        return f"Errore NOVA: {type(e).__name__}: {e}"
+
+            
 
 
 
