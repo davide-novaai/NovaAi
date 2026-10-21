@@ -249,7 +249,6 @@ with gr.Blocks(
             )
 
             chat = gr.Chatbot(
-                type="messages",
                 height=590,
                 show_label=False,
                 elem_id="chatbot"
