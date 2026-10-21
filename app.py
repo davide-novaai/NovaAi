@@ -1,4 +1,3 @@
-
 import os
 import gradio as gr
 from gradio_client import Client
