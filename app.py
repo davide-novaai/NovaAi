@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from gradio_client import Client
 
 
-NOVA_API_URL = "https://415da3841c0aa60f2f.gradio.live"
+NOVA_API_URL = "https://792c284910eefa1a32.gradio.live"
 
 app = FastAPI(title="NOVA AI")
 
