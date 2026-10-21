@@ -3,9 +3,7 @@ import os
 import gradio as gr
 from gradio_client import Client
 
-# Manteniamo il collegamento attuale a NOVA su Kaggle
 NOVA_API_URL = "https://4e203d07b8df8e1a72.gradio.live"
-
 
 def rispondi(messaggio, cronologia):
     if not messaggio or not messaggio.strip():
@@ -13,171 +11,132 @@ def rispondi(messaggio, cronologia):
 
     try:
         client = Client(NOVA_API_URL)
-        risposta = client.predict(
-            messaggio,
-            api_name="/predict"
-        )
-        return str(risposta)
-
+        return str(client.predict(messaggio, api_name="/predict"))
     except Exception as e:
-        return (
-            "NOVA non riesce a raggiungere il modello su Kaggle. "
-            "Controlla che il notebook sia attivo. "
-            f"Dettagli: {type(e).__name__}: {e}"
-        )
-
+        return f"NOVA non riesce a rispondere. Dettagli: {type(e).__name__}: {e}"
 
 CSS = """
 .gradio-container {
-    background:
-        radial-gradient(ellipse at 50% 0%, #20204a 0%, transparent 55%),
-        #090d1b !important;
-    color: #eef0ff !important;
-    min-height: 100vh;
+    background: #101114 !important;
+    color: #f4f4f5 !important;
 }
-
-#nova-header {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px 12px 12px;
-    text-align: center;
+#header {
+    max-width: 850px;
+    margin: auto;
+    padding: 18px 8px;
 }
-
-#nova-logo {
-    width: 68px;
-    height: 68px;
-    margin: 0 auto 12px;
-    display: flex;
+#logo {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
     align-items: center;
     justify-content: center;
-    border-radius: 22px;
-    background: linear-gradient(135deg, #7464ff, #20d5f5);
-    box-shadow: 0 0 36px #6558e855;
-    color: white;
-    font-size: 38px;
-    font-weight: 800;
+    border-radius: 12px;
+    background: #29262f;
+    color: #d2c6ff;
+    font-size: 25px;
+    margin-right: 12px;
 }
-
-#nova-header h1 {
+#brand {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+#brand h1 {
+    font-size: 23px;
     margin: 0;
-    font-size: 36px;
-    letter-spacing: 5px;
-    color: white;
+    letter-spacing: 1px;
 }
-
-#nova-header p {
-    color: #aab4d3;
-    margin-top: 8px;
+#subtitle {
+    color: #a1a1aa;
+    font-size: 13px;
+    margin: 3px 0 0 52px;
 }
-
-#nova-status {
-    display: inline-block;
-    padding: 6px 12px;
-    margin-top: 8px;
-    border: 1px solid #285f55;
-    border-radius: 999px;
-    color: #70e6bd;
-    font-size: 12px;
+#welcome {
+    text-align: center;
+    padding: 65px 10px 30px;
 }
-
-#nova-chatbot {
-    max-width: 900px;
-    margin: 0 auto;
-    border: 1px solid #292e49 !important;
+#welcome h2 {
+    color: #f4f4f5;
+    font-size: 30px;
+    font-weight: 600;
+}
+#chat {
+    max-width: 850px;
+    margin: auto;
+    border: none !important;
+    background: transparent !important;
+}
+#chat .message {
     border-radius: 20px !important;
-    background: #0e1323 !important;
-}
-
-#nova-chatbot .message {
-    border-radius: 18px !important;
     padding: 12px 16px !important;
-    line-height: 1.6 !important;
 }
-
-#nova-chatbot .message.user {
-    background: linear-gradient(135deg, #6254dc, #5144bd) !important;
-    color: white !important;
-    border: none !important;
+#chat .message.user {
+    background: #292a2f !important;
+    color: #f4f4f5 !important;
 }
-
-#nova-chatbot .message.bot {
-    background: #1a2035 !important;
-    color: #edf0ff !important;
-    border: 1px solid #2b3351 !important;
+#chat .message.bot {
+    background: #17181c !important;
+    color: #f4f4f5 !important;
 }
-
-#nova-input textarea {
-    background: #151b2d !important;
-    color: white !important;
-    border: 1px solid #343b5a !important;
-    border-radius: 16px !important;
+#input textarea {
+    background: #1b1c20 !important;
+    color: #f4f4f5 !important;
+    border: 1px solid #393a40 !important;
+    border-radius: 20px !important;
+    padding: 15px !important;
 }
-
-#nova-input textarea:focus {
-    border-color: #8072ff !important;
-    box-shadow: 0 0 0 2px #8072ff30 !important;
-}
-
 button.primary {
-    background: linear-gradient(135deg, #7464ff, #5144bd) !important;
+    background: #f4f4f5 !important;
+    color: #18181b !important;
     border: none !important;
-    border-radius: 14px !important;
+    border-radius: 50px !important;
 }
-
 footer {
     display: none !important;
 }
-
-@media (max-width: 600px) {
-    #nova-header h1 {
-        font-size: 30px;
-    }
-
-    #nova-chatbot {
-        border-radius: 14px !important;
-    }
-}
 """
 
-
 with gr.Blocks(
-    title="NOVA AI",
-    theme=gr.themes.Soft(
-        primary_hue="violet",
-        secondary_hue="blue",
-        neutral_hue="slate"
+    title="NOVA",
+    theme=gr.themes.Base(
+        primary_hue="neutral",
+        neutral_hue="zinc"
     ),
     css=CSS
 ) as app:
-
     gr.HTML("""
-    <div id="nova-header">
-        <div id="nova-logo">N</div>
+    <div id="header">
+      <div id="brand">
+        <div id="logo">✳</div>
         <h1>NOVA</h1>
-        <p>La tua AI personale ✦</p>
-        <div id="nova-status">● Assistente AI</div>
+      </div>
+      <div id="subtitle">Creata da Davide Breno</div>
+    </div>
+    <div id="welcome">
+      <h2>Come posso aiutarti?</h2>
+      <p style="color:#a1a1aa">Chiedimi qualcosa. Partiamo da lì.</p>
     </div>
     """)
 
     gr.ChatInterface(
         fn=rispondi,
         chatbot=gr.Chatbot(
-            height=500,
+            height=430,
             show_label=False,
-            elem_id="nova-chatbot"
+            elem_id="chat"
         ),
         textbox=gr.Textbox(
-            placeholder="Scrivi un messaggio a NOVA...",
+            placeholder="Scrivi a NOVA...",
             show_label=False,
             container=False,
-            lines=1,
-            max_lines=5,
-            elem_id="nova-input"
+            lines=2,
+            max_lines=6,
+            elem_id="input"
         ),
-        submit_btn="Invia",
+        submit_btn="↑",
         stop_btn="Interrompi"
     )
-
 
 app.launch(
     server_name="0.0.0.0",
