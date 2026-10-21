@@ -50,11 +50,9 @@ def rispondi(messaggio, cronologia):
         dati = risposta.json()
         return dati["choices"][0]["message"]["content"]
 
-    except Exception:
-        return (
-            "Non riesco a contattare il servizio AI. "
-            "Controlla la configurazione e riprova."
-        )
+        except Exception as e:
+        print("ERRORE NOVA:", repr(e))
+        return f"Errore AI: {type(e).__name__}: {e}"
 
 with gr.Blocks(title="NOVA AI", theme=gr.themes.Soft()) as app:
     gr.HTML("""
