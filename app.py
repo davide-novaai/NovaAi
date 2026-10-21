@@ -3,7 +3,8 @@ import os
 import gradio as gr
 from gradio_client import Client
 
-NOVA_API_URL = "https://4e203d07b8df8e1a72.gradio.live"
+
+NOVA_API_URL = "https://415da3841c0aa60f2f.gradio.live"
 
 
 def rispondi(messaggio, cronologia):
@@ -13,16 +14,27 @@ def rispondi(messaggio, cronologia):
     try:
         client = Client(NOVA_API_URL)
         risposta = client.predict(
-            messaggio,
+            messaggio.strip(),
+            cronologia or [],
             api_name="/predict"
         )
         return str(risposta)
     except Exception as e:
         return (
-            "NOVA non riesce a raggiungere il modello su Kaggle. "
-            "Controlla che il notebook sia attivo. "
-            f"Dettagli: {type(e).__name__}: {e}"
+            "Non riesco a raggiungere il modello AI. "
+            "Controlla che Kaggle sia attivo e che il link sia corretto. "
+            f"Errore: {type(e).__name__}: {e}"
         )
+
+
+def crea_opzioni(conversazioni):
+    return [
+        (
+            (c["titolo"] or "Nuova chat")[:38],
+            str(i)
+        )
+        for i, c in enumerate(conversazioni)
+    ]
 
 
 CSS = """
@@ -34,26 +46,59 @@ CSS = """
 body {
     background: #212121 !important;
 }
+#layout {
+    gap: 0 !important;
+}
 #sidebar {
     background: #171717 !important;
     border-right: 1px solid #303030;
-    min-height: 95vh;
+    min-height: 100vh;
     padding: 18px 12px;
 }
 #nova-name {
-    padding: 5px 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px 24px;
+}
+#new-chat {
+    background: transparent !important;
+    border: 1px solid #414141 !important;
+    border-radius: 12px !important;
+    color: #eeeeee !important;
+    text-align: left !important;
+}
+#history-title {
+    color: #a9a9a9;
+    font-size: 13px;
+    padding: 20px 8px 6px;
+}
+#history {
+    background: transparent !important;
+    border: none !important;
+}
+#history label {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    color: #e6e6e6 !important;
+}
+#history label:hover {
+    background: #2b2b2b !important;
 }
 #main {
-    max-width: 900px;
+    max-width: 920px;
     width: 100%;
     margin: 0 auto;
-    padding: 12px 22px;
+    padding: 12px 24px;
+    min-height: 100vh;
 }
 #welcome {
     text-align: center;
     padding: 90px 10px 30px;
     color: #ececec;
-    font-size: 25px;
+    font-size: 27px;
     font-weight: 500;
 }
 #chatbot {
@@ -62,9 +107,9 @@ body {
 }
 #chatbot .message {
     border: none !important;
-    border-radius: 20px !important;
+    border-radius: 18px !important;
     padding: 12px 16px !important;
-    line-height: 1.65 !important;
+    line-height: 1.7 !important;
 }
 #chatbot .message.user {
     background: #303030 !important;
@@ -77,7 +122,7 @@ body {
 #composer {
     background: #303030 !important;
     border: 1px solid #454545 !important;
-    border-radius: 25px !important;
+    border-radius: 28px !important;
     padding: 9px 12px !important;
     gap: 8px !important;
 }
@@ -87,7 +132,7 @@ body {
     border: none !important;
     box-shadow: none !important;
     padding: 9px 6px !important;
-    font-size: 15px !important;
+    font-size: 16px !important;
 }
 #send-button {
     min-width: 42px !important;
@@ -98,15 +143,8 @@ body {
     background: #f5f5f5 !important;
     color: #212121 !important;
     border: none !important;
-    font-size: 21px !important;
+    font-size: 23px !important;
     font-weight: bold !important;
-}
-#new-chat {
-    background: transparent !important;
-    border: 1px solid #414141 !important;
-    border-radius: 12px !important;
-    color: #eeeeee !important;
-    text-align: left !important;
 }
 footer {
     display: none !important;
@@ -116,15 +154,15 @@ button:hover {
 }
 @media (max-width: 650px) {
     #sidebar {
-        min-width: 76px !important;
-        padding: 12px 6px;
+        min-width: 115px !important;
+        padding: 12px 5px;
     }
     #main {
         padding: 8px;
     }
     #welcome {
         padding-top: 55px;
-        font-size: 21px;
+        font-size: 22px;
     }
 }
 """
@@ -139,7 +177,10 @@ with gr.Blocks(
     css=CSS
 ) as app:
 
-    cronologia = gr.State([])
+    conversazioni = gr.State([
+        {"titolo": "Nuova chat", "messaggi": []}
+    ])
+    indice_attivo = gr.State(0)
 
     with gr.Row(equal_height=False, elem_id="layout"):
 
@@ -158,10 +199,8 @@ with gr.Blocks(
                   <linearGradient id="novaLogo"
                                   x1="0" y1="0"
                                   x2="1" y2="1">
-                    <stop offset="0%"
-                          stop-color="#B6A5FF"/>
-                    <stop offset="100%"
-                          stop-color="#64D9F2"/>
+                    <stop offset="0%" stop-color="#B6A5FF"/>
+                    <stop offset="100%" stop-color="#64D9F2"/>
                   </linearGradient>
                 </defs>
                 <g fill="none"
@@ -176,8 +215,7 @@ with gr.Blocks(
                   <path d="M60 103 C47 103 38 93 38 81 C38 74 42 69 48 64 L71 46 C81 38 82 26 73 19"/>
                   <path d="M31 89 C20 82 18 69 24 59 C28 52 34 49 42 48 L70 48 C83 48 92 39 91 27"/>
                 </g>
-                <circle cx="60" cy="60" r="5"
-                        fill="#E8E7FF"/>
+                <circle cx="60" cy="60" r="5" fill="#E8E7FF"/>
               </svg>
             </div>
             """)
@@ -185,6 +223,19 @@ with gr.Blocks(
             nuovo = gr.Button(
                 "＋  Nuova chat",
                 elem_id="new-chat"
+            )
+
+            gr.HTML(
+                '<div id="history-title">Cronologia</div>'
+            )
+
+            storico = gr.Radio(
+                label="",
+                choices=[("Nuova chat", "0")],
+                value="0",
+                show_label=False,
+                elem_id="history",
+                interactive=True
             )
 
         with gr.Column(
@@ -199,7 +250,7 @@ with gr.Blocks(
 
             chat = gr.Chatbot(
                 type="messages",
-                height=510,
+                height=590,
                 show_label=False,
                 elem_id="chatbot"
             )
@@ -224,58 +275,106 @@ with gr.Blocks(
                     min_width=42
                 )
 
-    def invia(messaggio, cronologia):
-        cronologia = list(cronologia or [])
+    def invia(testo, tutte, indice):
+        tutte = [dict(c) for c in (tutte or [])]
+        indice = int(indice or 0)
 
-        if not messaggio or not messaggio.strip():
+        if not testo or not testo.strip():
             return (
-                cronologia,
+                tutte[indice]["messaggi"],
                 "",
-                cronologia,
+                tutte,
+                indice,
+                gr.update(),
                 gr.update()
             )
 
-        risposta = rispondi(
-            messaggio.strip(),
-            cronologia
-        )
+        while indice >= len(tutte):
+            tutte.append({
+                "titolo": "Nuova chat",
+                "messaggi": []
+            })
 
-        cronologia.extend([
-            {
-                "role": "user",
-                "content": messaggio.strip()
-            },
-            {
-                "role": "assistant",
-                "content": risposta
-            }
+        corrente = dict(tutte[indice])
+        messaggi = list(corrente["messaggi"])
+
+        domanda = testo.strip()
+        risposta = rispondi(domanda, messaggi)
+
+        messaggi.extend([
+            {"role": "user", "content": domanda},
+            {"role": "assistant", "content": risposta}
         ])
 
+        if corrente["titolo"] == "Nuova chat":
+            corrente["titolo"] = domanda[:38]
+
+        corrente["messaggi"] = messaggi
+        tutte[indice] = corrente
+
         return (
-            cronologia,
+            messaggi,
             "",
-            cronologia,
-            gr.update(visible=False)
+            tutte,
+            indice,
+            gr.update(visible=False),
+            gr.update(
+                choices=crea_opzioni(tutte),
+                value=str(indice)
+            )
         )
 
-    def nuova_chat():
+    def nuova_chat(tutte):
+        tutte = [dict(c) for c in (tutte or [])]
+
+        # Non crea duplicati se la chat corrente è già vuota
+        if tutte and not tutte[-1]["messaggi"]:
+            indice = len(tutte) - 1
+        else:
+            tutte.append({
+                "titolo": "Nuova chat",
+                "messaggi": []
+            })
+            indice = len(tutte) - 1
+
         return (
             [],
             "",
-            [],
-            gr.update(visible=True)
+            tutte,
+            indice,
+            gr.update(visible=True),
+            gr.update(
+                choices=crea_opzioni(tutte),
+                value=str(indice)
+            )
+        )
+
+    def seleziona_chat(valore, tutte):
+        if valore is None:
+            return [], 0, gr.update(visible=True)
+
+        indice = int(valore)
+        messaggi = tutte[indice]["messaggi"]
+
+        return (
+            messaggi,
+            indice,
+            gr.update(visible=not bool(messaggi))
         )
 
     outputs = [
         chat,
         messaggio,
-        cronologia,
-        benvenuto
+        conversazioni,
+        indice_attivo,
+        benvenuto,
+        storico
     ]
 
     inputs = [
         messaggio,
-        cronologia
+        conversazioni,
+        indice_attivo
     ]
 
     invia_btn.click(
@@ -292,12 +391,14 @@ with gr.Blocks(
 
     nuovo.click(
         nuova_chat,
-        outputs=[
-            chat,
-            messaggio,
-            cronologia,
-            benvenuto
-        ]
+        inputs=[conversazioni],
+        outputs=outputs
+    )
+
+    storico.change(
+        seleziona_chat,
+        inputs=[storico, conversazioni],
+        outputs=[chat, indice_attivo, benvenuto]
     )
 
 
