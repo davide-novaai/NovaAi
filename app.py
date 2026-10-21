@@ -4,7 +4,7 @@ import requests
 import gradio as gr
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
-MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+MODEL = "Qwen/Qwen2.5-0.5B-Instruct:featherless-ai"
 
 def rispondi(messaggio, cronologia):
     if not HF_TOKEN:
