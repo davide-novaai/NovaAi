@@ -53,8 +53,11 @@ def rispondi(messaggio, cronologia):
         return dati["choices"][0]["message"]["content"]
 
     except Exception as e:
+    if "risposta" in locals() and risposta is not None:
+        print("DETTAGLIO HUGGING FACE:", risposta.text)
+    else:
         print("ERRORE NOVA:", repr(e))
-        return f"Errore AI: {type(e).__name__}: {e}"
+    return "Errore nella richiesta AI. Controlla i Logs di Render."
 
 
 with gr.Blocks(title="NOVA AI", theme=gr.themes.Soft()) as app:
