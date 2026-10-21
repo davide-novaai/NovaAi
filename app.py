@@ -67,6 +67,6 @@ with gr.Blocks(title="NOVA AI", theme=gr.themes.Soft()) as app:
       <p>La tua AI personale ✦</p>
     </div>
     """)
-    gr.ChatInterface(fn=rispondi, type="messages")
+    gr.ChatInterface(fn=rispondi)
 
 app.launch()
