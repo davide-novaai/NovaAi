@@ -187,7 +187,31 @@ with gr.Blocks(
             min_width=175,
             elem_id="sidebar"
         ):
-            gr.HTML('<div id="nova-name">NOVA</div>')
+            
+gr.HTML("""
+<div id="nova-name" style="padding:5px 8px 20px;">
+  <svg viewBox="0 0 120 120" width="42" height="42"
+       xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="novaLogo" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#B6A5FF"/>
+        <stop offset="100%" stop-color="#64D9F2"/>
+      </linearGradient>
+    </defs>
+    <g fill="none" stroke="url(#novaLogo)" stroke-width="8"
+       stroke-linecap="round" stroke-linejoin="round">
+      <path d="M60 17 C73 17 82 27 82 39 C82 46 78 51 72 56 L49 74 C39 82 38 94 47 101"/>
+      <path d="M87 31 C99 38 101 51 95 61 C91 68 85 71 77 72 L49 72 C36 72 27 81 28 93"/>
+      <path d="M101 60 C101 73 91 82 79 82 C72 82 67 78 62 72 L44 49 C36 39 24 38 17 47"/>
+      <path d="M89 88 C82 100 69 102 59 96 C52 92 49 86 48 78 L48 50 C48 37 39 28 27 29"/>
+      <path d="M60 103 C47 103 38 93 38 81 C38 74 42 69 48 64 L71 46 C81 38 82 26 73 19"/>
+      <path d="M31 89 C20 82 18 69 24 59 C28 52 34 49 42 48 L70 48 C83 48 92 39 91 27"/>
+    </g>
+    <circle cx="60" cy="60" r="5" fill="#E8E7FF"/>
+  </svg>
+</div>
+""")
+
 
             nuovo = gr.Button(
                 "＋  Nuova chat",
